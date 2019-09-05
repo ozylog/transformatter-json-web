@@ -18,31 +18,9 @@ const Layout = styled.div`
 export default function App() {
   const { state, dispatch } = React.useContext(DataContext);
   const [ height, setHeight ] = React.useState(window.innerHeight);
-  const items = window.location.pathname.split('/');
-  const id = items[1];
-  const updateHeight = () => {
-    setHeight(window.innerHeight);
-  };
+  const updateHeight = () => setHeight(window.innerHeight);
 
-  if (id) {
-    if (state.data[id]) {
-      if (state.selectedId !== id) {
-        window.history.replaceState('', '', `/${state.selectedId}`);
-      }
-    } else {
-      if (state.selectedId) {
-        window.history.replaceState('', '', `/${state.selectedId}`);
-      } else{
-        dispatch({ type: ActionType.CREATE_DATA });
-      }
-    }
-  } else {
-    if (state.selectedId) {
-      window.history.replaceState('', '', `/${state.selectedId}`);
-    } else {
-      dispatch({ type: ActionType.CREATE_DATA });
-    }
-  }
+  if (!state.selectedId) dispatch({ type: ActionType.CREATE_DATA });
 
   React.useEffect(() => {
     window.addEventListener('resize', updateHeight);

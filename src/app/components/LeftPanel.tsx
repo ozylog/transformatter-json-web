@@ -30,7 +30,7 @@ const StyledButton = styled(Button)`
 export default function LeftPanel() {
   const { state, dispatch } = React.useContext(DataContext);
   const selectedDatum = state.selectedId && state.data[state.selectedId];
-  const beautify = () => {
+  const beautify = async () => {
     dispatch({
       type: ActionType.SET_OPERATION,
       payload: {

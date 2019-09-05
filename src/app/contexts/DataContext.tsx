@@ -1,24 +1,13 @@
 import * as React from 'react';
 import ObjectId from 'bson-objectid';
 import immer from 'immer';
-import get from 'lodash.get';
 import dayjs from 'dayjs';
-import jsonStableStringify from 'json-stable-stringify';
-
-interface Operation {
-  type: 'BEAUTIFY';
-  from: { format: 'JSON' };
-  to: { format: 'JSON'; space: number | null; stable: boolean };
-}
 
 export const enum ActionType {
   CREATE_DATA = 'CREATE_DATA',
   DELETE_DATA = 'DELETE_DATA',
+  UPDATE_DATA = 'UPDATE_DATA',
   SET_SELECTED_ID = 'SET_SELECTED_ID',
-  SET_RAW = 'SET_RAW',
-  SET_OPERATION = 'SET_OPERATION',
-  SET_SPACE = 'SET_SPACE',
-  SET_STABLE = 'SET_STABLE',
   RESET = 'RESET'
 }
 
@@ -28,10 +17,13 @@ export interface Data {
     [key: string]: {
       id: string;
       name: string;
-      type: string;
-      raw: string | null;
-      operation: Operation | null;
-      result: string | null;
+      input: string | null;
+      inputFormat: Format.JSON | null;
+      output: string | null;
+      outputFormat: Format | null;
+      outputSpace: number | null;
+      outputStable: boolean | null;
+      operator: Operator | null;
       createdAt: Date;
       updatedAt: Date;
     };
@@ -41,11 +33,8 @@ export interface Data {
 type Action =
   { type: ActionType.CREATE_DATA } |
   { type: ActionType.DELETE_DATA; payload: string } |
+  { type: ActionType.UPDATE_DATA; payload: Omit<Data, 'createdAt' | 'updatedAt'> } |
   { type: ActionType.SET_SELECTED_ID; payload: string } |
-  { type: ActionType.SET_RAW; payload: string | null } |
-  { type: ActionType.SET_OPERATION; payload: Operation | null } |
-  { type: ActionType.SET_SPACE; payload: number | null } |
-  { type: ActionType.SET_STABLE; payload: boolean } |
   { type: ActionType.RESET }
 ;
 
@@ -54,24 +43,6 @@ function init() {
     selectedId: null,
     data: {}
   };
-}
-
-function getResult(raw: string | null, operation: Operation | null) {
-  let result = '';
-
-  if(!raw || !operation) return result;
-
-  if (operation.type === 'BEAUTIFY' && operation.to.format === 'JSON') {
-    const json = JSON.parse(raw);
-
-    if (operation.to.stable) {
-      result = jsonStableStringify(json, { space: operation.to.space || 0 });
-    } else {
-      result = JSON.stringify(json, null, operation.to.space || 0);
-    }
-  }
-
-  return result;
 }
 
 const reducer = (state: Data, action: Action) => {
@@ -85,10 +56,13 @@ const reducer = (state: Data, action: Action) => {
         draft.data[draft.selectedId] = {
           id,
           name: `${dayjs(date).format('DDMMM HH:mm:ss')}:${id.substr(id.length - 3)}`,
-          type: 'JSON',
-          raw: null,
-          operation: null,
-          result: null,
+          input: null,
+          inputFormat: null,
+          operator: null,
+          output: null,
+          outputFormat: null,
+          outputSpace: null,
+          outputStable: null,
           createdAt: date,
           updatedAt: date
         };
@@ -108,53 +82,20 @@ const reducer = (state: Data, action: Action) => {
           delete draft.data[action.payload];
         }
       });
+    case ActionType.UPDATE_DATA:
+      return immer(state, (draft) => {
+        if (draft.selectedId && draft.data[draft.selectedId]) {
+          draft.data[draft.selectedId] = {
+            ...draft.data[draft.selectedId],
+            ...action.payload,
+            updatedAt: new Date()
+          };
+        }
+      });
     case ActionType.SET_SELECTED_ID:
       return immer(state, (draft) => {
         if (draft.data[action.payload]) {
           draft.selectedId = action.payload
-        }
-      });
-    case ActionType.SET_RAW:
-      return immer(state, (draft) => {
-        if (draft.selectedId && draft.data[draft.selectedId]) {
-          draft.data[draft.selectedId].raw = action.payload;
-          draft.data[draft.selectedId].updatedAt = new Date();
-        }
-      });
-    case ActionType.SET_OPERATION:
-      return immer(state, (draft) => {
-        if (draft.selectedId && draft.data[draft.selectedId]) {
-          const datum = draft.data[draft.selectedId];
-
-          datum.operation = action.payload;
-          datum.result = getResult(datum.raw, datum.operation);
-          datum.updatedAt = new Date();
-        }
-      });
-    case ActionType.SET_SPACE:
-      return immer(state, (draft) => {
-        if (draft.selectedId && draft.data[draft.selectedId]) {
-          const datum = draft.data[draft.selectedId];
-          const toFormat = get(datum, 'operation.to.format');
-
-          if (toFormat === 'JSON') {
-            datum.operation!.to.space = action.payload;
-            datum.result = getResult(datum.raw, datum.operation);
-            datum.updatedAt = new Date();
-          }
-        }
-      });
-    case ActionType.SET_STABLE:
-      return immer(state, (draft) => {
-        if (draft.selectedId && draft.data[draft.selectedId]) {
-          const datum = draft.data[draft.selectedId];
-          const toFormat = get(datum, 'operation.to.format');
-
-          if (toFormat === 'JSON') {
-            datum.operation!.to.stable = action.payload;
-            datum.result = getResult(datum.raw, datum.operation);
-            datum.updatedAt = new Date();
-          }
         }
       });
     case  ActionType.RESET:
@@ -182,3 +123,14 @@ function DataProvider(props: React.PropsWithChildren<{}>) {
 }
 
 export { DataContext, DataProvider };
+
+
+export enum Format {
+  JSON = 'JSON',
+  XML = 'XML'
+}
+
+export enum Operator {
+  BEAUTIFY_JSON = 'BEAUTIFY_JSON',
+  CONVERT_JSON_TO_XML = 'CONVERT_JSON_TO_XML'
+}
