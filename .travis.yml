@@ -9,7 +9,7 @@ script:
 deploy:
   provider: script
   skip_cleanup: true
-  script: aws s3 sync --delete ./dist s3://transformater-json-web
+  script: aws s3 sync --delete ./dist s3://transformatter-json-web
   on:
     branch: master
 
