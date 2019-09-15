@@ -22,7 +22,10 @@ export default function Editor({ name, value, readOnly, onChange }: React.PropsW
       width='100%'
       readOnly={readOnly}
       showPrintMargin={false}
-      setOptions={{ fontFamily: 'Roboto Mono'}}
+      setOptions={{
+        fontFamily: 'Roboto Mono',
+        useWorker: false
+      }}
       onLoad={function (_editor) {
         _editor.$blockScrolling = 1
       }}

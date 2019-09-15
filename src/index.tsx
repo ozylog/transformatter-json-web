@@ -3,7 +3,7 @@ import * as OfflinePluginRuntime from 'offline-plugin/runtime';
 import * as React from 'react';
 import { render } from 'react-dom';
 import { createGlobalStyle, ThemeProvider } from 'styled-components';
-import { DataProvider } from '@src/app/contexts/DataContext';
+import { ItemsProvider } from '@src/app/contexts/ItemsContext';
 
 const env = process.env.NODE_ENV;
 
@@ -34,6 +34,7 @@ const theme = {
   borderColor: '#555',
   activeColor: '#191919',
   inputColor: '#272822;',
+  errorBackground: '#8a1e1e',
   maxWidth: '3000px'
 };
 
@@ -41,9 +42,9 @@ render(
   <ThemeProvider theme={theme}>
     <React.Fragment>
       <GlobalStyle />
-      <DataProvider>
+      <ItemsProvider>
         <App/>
-      </DataProvider>
+      </ItemsProvider>
     </React.Fragment>
   </ThemeProvider>
   , document.getElementById('app'));

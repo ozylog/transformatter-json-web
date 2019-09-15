@@ -1,9 +1,12 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import Button from 'yuai-buttons/dist/Button';
-import { DataContext, ActionType } from '@src/app/contexts/DataContext';
+import { ItemsContext, ActionType, Operator, Format } from '@src/app/contexts/ItemsContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay } from '@fortawesome/free-solid-svg-icons';
+import vetch from 'vetch';
+
+const { API_URL } = process.env;
 
 const Container = styled.div`
   width: 50%;
@@ -28,22 +31,49 @@ const StyledButton = styled(Button)`
 `;
 
 export default function LeftPanel() {
-  const { state, dispatch } = React.useContext(DataContext);
-  const selectedDatum = state.selectedId && state.data[state.selectedId];
-  const beautify = () => {
-    dispatch({
-      type: ActionType.SET_OPERATION,
+  const { state, dispatch } = React.useContext(ItemsContext);
+  const selectedItem = state.selectedId && state.items[state.selectedId];
+  const beautify = async () => {
+    if (!selectedItem || !selectedItem.input || !selectedItem.inputFormat) return;
+
+    const basicPayload = {
+      outputSpace: selectedItem.outputSpace || 2,
+      outputStable: selectedItem.outputStable || false,
+      outputFormat: Format.JSON,
+      operator: Operator.BEAUTIFY_JSON
+    };
+
+    const res = await vetch<OperateApiRes, OperateApiErr>(`${API_URL}/v1/jsons/operate`, {
+      method: 'POST',
       payload: {
-        type: 'BEAUTIFY',
-        from: { format: 'JSON' },
-        to: { format: 'JSON', space: 2, stable: false }
+        ...basicPayload,
+        input:  selectedItem.input,
+        inputFormat: selectedItem.inputFormat,
+      },
+      headers: {
+        'Content-Type': 'application/json'
       }
-    });
+    }).json();
+
+    if (res.ok) {
+      dispatch({ type: ActionType.PATCH_ITEM, payload: { ...basicPayload, ...res.data } });
+    } else {
+      dispatch({ type: ActionType.PATCH_ITEM, payload: { errorMessage: res.data.message, output: null } })
+    }
   };
 
   return (
-    <Container disabled={selectedDatum && selectedDatum.raw ? false : true}>
+    <Container disabled={selectedItem && selectedItem.input ? false : true}>
       <StyledButton onClick={beautify}><FontAwesomeIcon icon={faPlay} /> Beautify</StyledButton>
     </Container>
   );
+}
+
+interface OperateApiRes {
+  output: string;
+}
+
+interface OperateApiErr {
+  statusCode: number;
+  message: string;
 }

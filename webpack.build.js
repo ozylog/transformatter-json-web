@@ -5,7 +5,7 @@ const OfflinePlugin = require('offline-plugin');
 const merge = require('webpack-merge');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const base = require('./webpack');
-const envVars = [];
+const envVars = [ 'API_URL' ];
 
 module.exports = merge(base, {
   mode: 'production',
