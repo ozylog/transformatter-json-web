@@ -7,9 +7,10 @@ script:
   - NODE_ENV=production yarn build
   - yarn test
 deploy:
-  provider: script
+  provider: s3
+  bucket: "transformatter-json-web"
   skip_cleanup: true
-  script: aws s3 sync --delete ./dist s3://transformatter-json-web
+  local_dir: dist
   on:
     branch: master
 
