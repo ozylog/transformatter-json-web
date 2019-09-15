@@ -4,7 +4,7 @@ node_js:
 install:
   - yarn install
 script:
-  - yarn build
+  - NODE_ENV=production yarn build
   - yarn test
 deploy:
   provider: script
