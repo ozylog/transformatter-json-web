@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+  - 10
+install:
+  - yarn install
+script:
+  - NODE_ENV=production yarn build
+  - yarn test
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: aws s3 sync --delete ./dist s3://transformater-json-web
+  on:
+    branch: master
+
