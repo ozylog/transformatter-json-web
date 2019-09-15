@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import Editor from '@src/app/components/Editor';
-import { DataContext } from '@src/app/contexts/DataContext';
+import { ItemsContext } from '@src/app/contexts/ItemsContext';
 
 const Container = styled.div`
   width: 50%;
@@ -10,12 +10,12 @@ const Container = styled.div`
 `;
 
 export default function RightEditor() {
-  const { state } = React.useContext(DataContext);
-  const result = state.selectedId && state.data[state.selectedId] && state.data[state.selectedId].result;
+  const { state } = React.useContext(ItemsContext);
+  const output = state.selectedId && state.items[state.selectedId] && state.items[state.selectedId].output;
 
   return (
     <Container>
-      <Editor name='RightEditor' value={result} readOnly={true} />
+      <Editor name='RightEditor' value={output} readOnly={true} />
     </Container>
   );
 }

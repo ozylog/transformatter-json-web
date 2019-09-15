@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
-import { DataContext, ActionType } from '@src/app/contexts/DataContext';
+import { ItemsContext, ActionType } from '@src/app/contexts/ItemsContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFile, faTimes, faPlus } from '@fortawesome/free-solid-svg-icons';
 
@@ -98,17 +98,17 @@ const DeleteIcon = styled(FontAwesomeIcon)`
 `;
 
 export default function Sidebar() {
-  const { state, dispatch } = React.useContext(DataContext);
-  const sortedData = Object.values(state.data).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  const { state, dispatch } = React.useContext(ItemsContext);
+  const sortedData = Object.values(state.items).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   const enableDeletion = sortedData.length > 1;
 
-  const createNew = () => dispatch({ type: ActionType.CREATE_DATA });
+  const createNew = () => dispatch({ type: ActionType.CREATE_ITEM });
   const selectId = (id: string) => {
     return () => dispatch({ type: ActionType.SET_SELECTED_ID, payload: id });
   }
 
   const deleteId = (id: string) => {
-    return () => dispatch({ type: ActionType.DELETE_DATA, payload: id });
+    return () => dispatch({ type: ActionType.DELETE_ITEM, payload: id });
   };
 
   return (

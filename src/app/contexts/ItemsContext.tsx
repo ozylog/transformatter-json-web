@@ -3,37 +3,10 @@ import ObjectId from 'bson-objectid';
 import immer from 'immer';
 import dayjs from 'dayjs';
 
-export const enum ActionType {
-  CREATE_DATA = 'CREATE_DATA',
-  DELETE_DATA = 'DELETE_DATA',
-  UPDATE_DATA = 'UPDATE_DATA',
-  SET_SELECTED_ID = 'SET_SELECTED_ID',
-  RESET = 'RESET'
-}
-
-export interface Data {
-  selectedId: string | null;
-  data: {
-    [key: string]: {
-      id: string;
-      name: string;
-      input: string | null;
-      inputFormat: Format.JSON | null;
-      output: string | null;
-      outputFormat: Format | null;
-      outputSpace: number | null;
-      outputStable: boolean | null;
-      operator: Operator | null;
-      createdAt: Date;
-      updatedAt: Date;
-    };
-  };
-}
-
 type Action =
-  { type: ActionType.CREATE_DATA } |
-  { type: ActionType.DELETE_DATA; payload: string } |
-  { type: ActionType.UPDATE_DATA; payload: Omit<Data, 'createdAt' | 'updatedAt'> } |
+  { type: ActionType.CREATE_ITEM } |
+  { type: ActionType.DELETE_ITEM; payload: string } |
+  { type: ActionType.PATCH_ITEM; payload: Partial<Omit<Json, 'createdAt' | 'updatedAt'>> } |
   { type: ActionType.SET_SELECTED_ID; payload: string } |
   { type: ActionType.RESET }
 ;
@@ -41,19 +14,19 @@ type Action =
 function init() {
   return {
     selectedId: null,
-    data: {}
+    items: {}
   };
 }
 
-const reducer = (state: Data, action: Action) => {
+const reducer = (state: State, action: Action) => {
   switch (action.type) {
-    case ActionType.CREATE_DATA:
+    case ActionType.CREATE_ITEM:
       return immer(state, (draft) => {
         const date = new Date();
         const id = new ObjectId().str;
 
         draft.selectedId = id;
-        draft.data[draft.selectedId] = {
+        draft.items[draft.selectedId] = {
           id,
           name: `${dayjs(date).format('DDMMM HH:mm:ss')}:${id.substr(id.length - 3)}`,
           input: null,
@@ -63,30 +36,31 @@ const reducer = (state: Data, action: Action) => {
           outputFormat: null,
           outputSpace: null,
           outputStable: null,
+          errorMessage: null,
           createdAt: date,
           updatedAt: date
         };
       });
-    case ActionType.DELETE_DATA:
+    case ActionType.DELETE_ITEM:
       return immer(state, (draft) => {
-        const sortedKeys = Object.values(draft.data)
+        const sortedKeys = Object.values(draft.items)
           .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-          .map((datum) => datum.id);
+          .map((item) => item.id);
 
-        if (sortedKeys.length > 1 && draft.data[action.payload]) {
+        if (sortedKeys.length > 1 && draft.items[action.payload]) {
           if (draft.selectedId === action.payload) {
             const idx = sortedKeys.indexOf(action.payload);
             draft.selectedId = sortedKeys[idx + 1] || sortedKeys[idx - 1];
           }
 
-          delete draft.data[action.payload];
+          delete draft.items[action.payload];
         }
       });
-    case ActionType.UPDATE_DATA:
+    case ActionType.PATCH_ITEM:
       return immer(state, (draft) => {
-        if (draft.selectedId && draft.data[draft.selectedId]) {
-          draft.data[draft.selectedId] = {
-            ...draft.data[draft.selectedId],
+        if (draft.selectedId && draft.items[draft.selectedId]) {
+          draft.items[draft.selectedId] = {
+            ...draft.items[draft.selectedId],
             ...action.payload,
             updatedAt: new Date()
           };
@@ -94,7 +68,7 @@ const reducer = (state: Data, action: Action) => {
       });
     case ActionType.SET_SELECTED_ID:
       return immer(state, (draft) => {
-        if (draft.data[action.payload]) {
+        if (draft.items[action.payload]) {
           draft.selectedId = action.payload
         }
       });
@@ -105,24 +79,24 @@ const reducer = (state: Data, action: Action) => {
   }
 };
 
-const initialState: Data = {
+const initialState: State = {
   selectedId: null,
-  data: {}
+  items: {}
 };
 
-const DataContext = React.createContext({ state: initialState , dispatch: (action: Action) => {} });
+const ItemsContext = React.createContext({ state: initialState , dispatch: (action: Action) => {} });
 
-function DataProvider(props: React.PropsWithChildren<{}>) {
+function ItemsProvider(props: React.PropsWithChildren<{}>) {
   const [ state, dispatch ] = React.useReducer(reducer, undefined, init);
 
   return (
-    <DataContext.Provider value={{ state, dispatch }}>
+    <ItemsContext.Provider value={{ state, dispatch }}>
       {props.children}
-    </DataContext.Provider>
+    </ItemsContext.Provider>
   );
 }
 
-export { DataContext, DataProvider };
+export { ItemsContext, ItemsProvider };
 
 
 export enum Format {
@@ -133,4 +107,34 @@ export enum Format {
 export enum Operator {
   BEAUTIFY_JSON = 'BEAUTIFY_JSON',
   CONVERT_JSON_TO_XML = 'CONVERT_JSON_TO_XML'
+}
+
+export const enum ActionType {
+  CREATE_ITEM = 'CREATE_ITEM',
+  DELETE_ITEM = 'DELETE_ITEM',
+  PATCH_ITEM = 'PATCH_ITEM',
+  SET_SELECTED_ID = 'SET_SELECTED_ID',
+  RESET = 'RESET'
+}
+
+export interface Json {
+  id: string;
+  name: string;
+  input: string | null;
+  inputFormat: Format.JSON | null;
+  output: string | null;
+  outputFormat: Format | null;
+  outputSpace: number | null;
+  outputStable: boolean | null;
+  operator: Operator | null;
+  errorMessage: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface State {
+  selectedId: string | null;
+  items: {
+    [key: string]: Json;
+  };
 }

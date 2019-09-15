@@ -2,7 +2,7 @@ import * as React from 'react';
 import styled from 'styled-components';
 import Content from '@src/app/components/Content';
 import Sidebar from '@src/app/components/Sidebar';
-import { DataContext, ActionType } from '@src/app/contexts/DataContext';
+import { ItemsContext, ActionType } from '@src/app/contexts/ItemsContext';
 
 const Layout = styled.div`
   font-family: 'Roboto Mono';
@@ -16,11 +16,11 @@ const Layout = styled.div`
 `;
 
 export default function App() {
-  const { state, dispatch } = React.useContext(DataContext);
+  const { state, dispatch } = React.useContext(ItemsContext);
   const [ height, setHeight ] = React.useState(window.innerHeight);
   const updateHeight = () => setHeight(window.innerHeight);
 
-  if (!state.selectedId) dispatch({ type: ActionType.CREATE_DATA });
+  if (!state.selectedId) dispatch({ type: ActionType.CREATE_ITEM });
 
   React.useEffect(() => {
     window.addEventListener('resize', updateHeight);

@@ -1,10 +1,9 @@
-import get from 'lodash.get';
 import * as React from 'react';
 import styled from 'styled-components';
 import { Button, ButtonGroup } from 'yuai-buttons';
 import { faCopy, faPrint } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { DataContext, ActionType } from '@src/app/contexts/DataContext';
+import { ItemsContext, ActionType } from '@src/app/contexts/ItemsContext';
 import copy from 'copy-to-clipboard';
 
 const Container = styled.div`
@@ -82,26 +81,38 @@ const Copied = styled.span`
 `;
 
 export default function RightPanel() {
-  const { state, dispatch } = React.useContext(DataContext);
-  const selectedDatum = state.selectedId && state.data[state.selectedId];
-  const rawSpace = get(selectedDatum, 'operation.to.space');
+  const { state, dispatch } = React.useContext(ItemsContext);
+  const selectedItem = state.selectedId && state.items[state.selectedId];
+  const rawSpace = selectedItem && selectedItem.outputSpace;
   const space = rawSpace == null ? '' : rawSpace;
-  const stable = get(selectedDatum, 'operation.to.stable') || false;
+  const stable = selectedItem && selectedItem.outputStable ? selectedItem.outputStable : false;
 
   const onChangeSpaceOption = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
-    if (value === '' || (value === `${parseInt(value)}` && parseInt(value) < 10)) dispatch({ type: ActionType.SET_SPACE, payload: value === '' ? null : parseInt(value) })
+    if (value === '' || (value === `${parseInt(value)}` && parseInt(value) < 10)) {
+      dispatch({
+        type: ActionType.PATCH_ITEM,
+        payload: {
+          outputSpace: value === '' ? null : parseInt(value)
+        }
+      });
+    }
   };
 
   const onChangeStableOption = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = e.target;
 
-    dispatch({ type: ActionType.SET_STABLE, payload: checked })
+    dispatch({
+      type: ActionType.PATCH_ITEM,
+      payload: {
+        outputStable: checked
+      }
+    });
   };
 
   const copyToClipboard = () => {
-    if (selectedDatum && selectedDatum.result != null ) {
-      copy(selectedDatum.result);
+    if (selectedItem && selectedItem.output != null ) {
+      copy(selectedItem.output);
 
       const copiedElement = document.getElementById('copied')!;
 
@@ -114,9 +125,9 @@ export default function RightPanel() {
   };
 
   const print = () => {
-    if (selectedDatum && selectedDatum.result != null ) {
+    if (selectedItem && selectedItem.output != null ) {
       let html="<html>";
-      html+= selectedDatum.result.replace(/ /g, '\u00a0').replace(/(?:\r\n|\r|\n)/g, '<br>');
+      html+= selectedItem.output.replace(/ /g, '\u00a0').replace(/(?:\r\n|\r|\n)/g, '<br>');
 
       html+="</html>";
 
@@ -130,7 +141,7 @@ export default function RightPanel() {
   };
 
   return (
-    <Container disabled={selectedDatum && selectedDatum.result ? false : true}>
+    <Container disabled={selectedItem && selectedItem.output ? false : true}>
       <BoxLeft>
         <Option>
           <PreLabel>Spaces</PreLabel>
