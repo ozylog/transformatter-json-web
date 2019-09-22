@@ -1,6 +1,6 @@
 {
   "name": "transformatter-json-web",
-  "version": "0.0.0",
+  "version": "0.1.1",
   "description": "JSON Transformatter Web",
   "repository": "git@bitbucket.org:asyncawait-io/transformatter-json-web.git",
   "author": "Cahya Pribadi",
