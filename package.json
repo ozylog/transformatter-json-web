@@ -25,6 +25,7 @@
     "copy-to-clipboard": "^3.2.0",
     "dayjs": "^1.8.15",
     "immer": "^4.0.0",
+    "lodash.pick": "^4.4.0",
     "react": "^16.9.0",
     "react-ace": "^7.0.2",
     "react-dom": "^16.9.0",

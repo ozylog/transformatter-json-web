@@ -1,10 +1,11 @@
 import * as React from 'react';
 import styled from 'styled-components';
+import copy from 'copy-to-clipboard';
 import { Button, ButtonGroup } from 'yuai-buttons';
 import { faCopy, faPrint } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ItemsContext, ActionType } from '@src/app/contexts/ItemsContext';
-import copy from 'copy-to-clipboard';
+import { operate, OperatePayload } from '@src/app/services/itemsService';
 
 const Container = styled.div`
   width: 50%;
@@ -86,16 +87,39 @@ export default function RightPanel() {
   const rawSpace = selectedItem && selectedItem.outputSpace;
   const space = rawSpace == null ? '' : rawSpace;
   const stable = selectedItem && selectedItem.outputStable ? selectedItem.outputStable : false;
+  let payload: OperatePayload | undefined;
 
-  const onChangeSpaceOption = (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (selectedItem && selectedItem.output) {
+    payload = {
+      outputSpace: selectedItem.outputSpace!,
+      outputStable: selectedItem.outputStable!,
+      outputFormat: selectedItem.outputFormat!,
+      operator: selectedItem.operator!,
+      input:  selectedItem.input!,
+      inputFormat: selectedItem.inputFormat!
+    };
+  }
+
+  const onChangeSpaceOption = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
-    if (value === '' || (value === `${parseInt(value)}` && parseInt(value) < 10)) {
-      dispatch({
-        type: ActionType.PATCH_ITEM,
-        payload: {
-          outputSpace: value === '' ? null : parseInt(value)
-        }
-      });
+
+    dispatch({
+      type: ActionType.PATCH_ITEM,
+      payload: {
+        outputSpace: value === '' ? null : parseInt(value)
+      }
+    });
+
+    if (payload && (value !== '' || (value === `${parseInt(value)}` && parseInt(value) < 10))) {
+      payload.outputSpace = parseInt(value);
+
+      const res = await operate(payload);
+
+      if (res.ok) {
+        dispatch({ type: ActionType.PATCH_ITEM, payload: res.data });
+      } else {
+        dispatch({ type: ActionType.PATCH_ITEM, payload: { errorMessage: res.data.message, output: null } })
+      }
     }
   };
 
