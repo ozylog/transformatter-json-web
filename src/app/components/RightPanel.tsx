@@ -1,10 +1,12 @@
 import * as React from 'react';
 import styled from 'styled-components';
+import copy from 'copy-to-clipboard';
 import { Button, ButtonGroup } from 'yuai-buttons';
 import { faCopy, faPrint } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ItemsContext, ActionType } from '@src/app/contexts/ItemsContext';
-import copy from 'copy-to-clipboard';
+import { ItemsContext, ItemsActionType } from '@src/app/contexts/ItemsContext';
+import { AppContext, AppActionType } from '@src/app/contexts/AppContext';
+import { operate, OperatePayload } from '@src/app/services/itemsService';
 
 const Container = styled.div`
   width: 50%;
@@ -81,33 +83,72 @@ const Copied = styled.span`
 `;
 
 export default function RightPanel() {
-  const { state, dispatch } = React.useContext(ItemsContext);
-  const selectedItem = state.selectedId && state.items[state.selectedId];
+  const App = React.useContext(AppContext);
+  const Items = React.useContext(ItemsContext);
+  const selectedItem = Items.state.selectedId && Items.state.items[Items.state.selectedId];
   const rawSpace = selectedItem && selectedItem.outputSpace;
   const space = rawSpace == null ? '' : rawSpace;
   const stable = selectedItem && selectedItem.outputStable ? selectedItem.outputStable : false;
+  let payload: OperatePayload | undefined;
 
-  const onChangeSpaceOption = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    if (value === '' || (value === `${parseInt(value)}` && parseInt(value) < 10)) {
-      dispatch({
-        type: ActionType.PATCH_ITEM,
-        payload: {
-          outputSpace: value === '' ? null : parseInt(value)
-        }
-      });
+  if (selectedItem && selectedItem.output) {
+    payload = {
+      outputSpace: selectedItem.outputSpace!,
+      outputStable: selectedItem.outputStable!,
+      outputFormat: selectedItem.outputFormat!,
+      operator: selectedItem.operator!,
+      input:  selectedItem.input!,
+      inputFormat: selectedItem.inputFormat!
+    };
+  }
+
+  const runOperation = async (payload: OperatePayload) => {
+    App.dispatch({ type: AppActionType.EDITOR_LOADING, payload: true });
+
+    const res = await operate(payload);
+
+    App.dispatch({ type: AppActionType.EDITOR_LOADING, payload: false });
+
+
+    if (res.ok) {
+      Items.dispatch({ type: ItemsActionType.PATCH_ITEM, payload: res.data });
+    } else {
+      Items.dispatch({ type: ItemsActionType.PATCH_ITEM, payload: { errorMessage: res.data.message, output: null } })
     }
   };
 
-  const onChangeStableOption = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeSpaceOption = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+
+    Items.dispatch({
+      type: ItemsActionType.PATCH_ITEM,
+      payload: {
+        outputSpace: value === '' ? null : parseInt(value)
+      }
+    });
+
+    if (payload && (value !== '' || (value === `${parseInt(value)}` && parseInt(value) < 10))) {
+      payload.outputSpace = parseInt(value);
+
+      runOperation(payload);
+    }
+  };
+
+  const onChangeStableOption = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = e.target;
 
-    dispatch({
-      type: ActionType.PATCH_ITEM,
+    Items.dispatch({
+      type: ItemsActionType.PATCH_ITEM,
       payload: {
         outputStable: checked
       }
     });
+
+    if (payload) {
+      payload.outputStable = checked;
+
+      runOperation(payload);
+    }
   };
 
   const copyToClipboard = () => {

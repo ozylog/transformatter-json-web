@@ -2,7 +2,7 @@ import * as React from 'react';
 import styled from 'styled-components';
 import Content from '@src/app/components/Content';
 import Sidebar from '@src/app/components/Sidebar';
-import { ItemsContext, ActionType } from '@src/app/contexts/ItemsContext';
+import { ItemsContext, ItemsActionType } from '@src/app/contexts/ItemsContext';
 
 const Layout = styled.div`
   font-family: 'Roboto Mono';
@@ -20,7 +20,7 @@ export default function App() {
   const [ height, setHeight ] = React.useState(window.innerHeight);
   const updateHeight = () => setHeight(window.innerHeight);
 
-  if (!state.selectedId) dispatch({ type: ActionType.CREATE_ITEM });
+  if (!state.selectedId) dispatch({ type: ItemsActionType.CREATE_ITEM });
 
   React.useEffect(() => {
     window.addEventListener('resize', updateHeight);
