@@ -4,11 +4,11 @@ import immer from 'immer';
 import dayjs from 'dayjs';
 
 type Action =
-  { type: ActionType.CREATE_ITEM } |
-  { type: ActionType.DELETE_ITEM; payload: string } |
-  { type: ActionType.PATCH_ITEM; payload: Partial<Omit<Json, 'createdAt' | 'updatedAt'>> } |
-  { type: ActionType.SET_SELECTED_ID; payload: string } |
-  { type: ActionType.RESET }
+  { type: ItemsActionType.CREATE_ITEM } |
+  { type: ItemsActionType.DELETE_ITEM; payload: string } |
+  { type: ItemsActionType.PATCH_ITEM; payload: Partial<Omit<Json, 'createdAt' | 'updatedAt'>> } |
+  { type: ItemsActionType.SET_SELECTED_ID; payload: string } |
+  { type: ItemsActionType.RESET }
 ;
 
 function init() {
@@ -20,7 +20,7 @@ function init() {
 
 const reducer = (state: State, action: Action) => {
   switch (action.type) {
-    case ActionType.CREATE_ITEM:
+    case ItemsActionType.CREATE_ITEM:
       return immer(state, (draft) => {
         const date = new Date();
         const id = new ObjectId().str;
@@ -41,7 +41,7 @@ const reducer = (state: State, action: Action) => {
           updatedAt: date
         };
       });
-    case ActionType.DELETE_ITEM:
+    case ItemsActionType.DELETE_ITEM:
       return immer(state, (draft) => {
         const sortedKeys = Object.values(draft.items)
           .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
@@ -56,7 +56,7 @@ const reducer = (state: State, action: Action) => {
           delete draft.items[action.payload];
         }
       });
-    case ActionType.PATCH_ITEM:
+    case ItemsActionType.PATCH_ITEM:
       return immer(state, (draft) => {
         if (draft.selectedId && draft.items[draft.selectedId]) {
           draft.items[draft.selectedId] = {
@@ -66,13 +66,13 @@ const reducer = (state: State, action: Action) => {
           };
         }
       });
-    case ActionType.SET_SELECTED_ID:
+    case ItemsActionType.SET_SELECTED_ID:
       return immer(state, (draft) => {
         if (draft.items[action.payload]) {
           draft.selectedId = action.payload
         }
       });
-    case  ActionType.RESET:
+    case  ItemsActionType.RESET:
       return init();
     default:
       return state;
@@ -109,7 +109,7 @@ export enum Operator {
   CONVERT_JSON_TO_XML = 'CONVERT_JSON_TO_XML'
 }
 
-export const enum ActionType {
+export const enum ItemsActionType {
   CREATE_ITEM = 'CREATE_ITEM',
   DELETE_ITEM = 'DELETE_ITEM',
   PATCH_ITEM = 'PATCH_ITEM',

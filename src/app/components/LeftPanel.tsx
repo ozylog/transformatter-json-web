@@ -1,7 +1,8 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import Button from 'yuai-buttons/dist/Button';
-import { ItemsContext, ActionType, Operator, Format } from '@src/app/contexts/ItemsContext';
+import { AppContext, AppActionType } from '@src/app/contexts/AppContext';
+import { ItemsContext, ItemsActionType, Operator, Format } from '@src/app/contexts/ItemsContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay } from '@fortawesome/free-solid-svg-icons';
 import { operate } from '@src/app/services/itemsService';
@@ -29,8 +30,9 @@ const StyledButton = styled(Button)`
 `;
 
 export default function LeftPanel() {
-  const { state, dispatch } = React.useContext(ItemsContext);
-  const selectedItem = state.selectedId && state.items[state.selectedId];
+  const Items = React.useContext(ItemsContext);
+  const App = React.useContext(AppContext);
+  const selectedItem = Items.state.selectedId && Items.state.items[Items.state.selectedId];
   const beautify = async () => {
     if (!selectedItem || !selectedItem.input || !selectedItem.inputFormat) return;
 
@@ -43,12 +45,16 @@ export default function LeftPanel() {
       inputFormat: selectedItem.inputFormat
     };
 
+    App.dispatch({ type: AppActionType.EDITOR_LOADING, payload: true });
+
     const res = await operate(payload);
 
+    App.dispatch({ type: AppActionType.EDITOR_LOADING, payload: false });
+
     if (res.ok) {
-      dispatch({ type: ActionType.PATCH_ITEM, payload: { ...payload, ...res.data } });
+      Items.dispatch({ type: ItemsActionType.PATCH_ITEM, payload: { ...payload, ...res.data } });
     } else {
-      dispatch({ type: ActionType.PATCH_ITEM, payload: { errorMessage: res.data.message, output: null } })
+      Items.dispatch({ type: ItemsActionType.PATCH_ITEM, payload: { errorMessage: res.data.message, output: null } })
     }
   };
 

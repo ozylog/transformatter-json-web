@@ -1,21 +1,21 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import dayjs from 'dayjs';
-import { ItemsContext, ActionType } from '@src/app/contexts/ItemsContext';
+import { ItemsContext, ItemsActionType } from '@src/app/contexts/ItemsContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFile, faTimes, faPlus } from '@fortawesome/free-solid-svg-icons';
 
 const Container = styled.div`
   height: 100%;
   border-right: 1px solid ${({ theme }) => theme.borderColor};
-  width: 250px;
+  width: ${({ theme }) => theme.sidebarWidth};
 `;
 const Logo = styled.div`
   font-family: 'Passion One';
   padding: 20px 15px;
   text-transform: uppercase;
   height: 60px;
-  font-size: 24px;
+  font-size: 30px;
 `;
 const Yellow = styled.span`
   color: ${({ theme }) => theme.primaryColor};
@@ -102,13 +102,13 @@ export default function Sidebar() {
   const sortedData = Object.values(state.items).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   const enableDeletion = sortedData.length > 1;
 
-  const createNew = () => dispatch({ type: ActionType.CREATE_ITEM });
+  const createNew = () => dispatch({ type: ItemsActionType.CREATE_ITEM });
   const selectId = (id: string) => {
-    return () => dispatch({ type: ActionType.SET_SELECTED_ID, payload: id });
+    return () => dispatch({ type: ItemsActionType.SET_SELECTED_ID, payload: id });
   }
 
   const deleteId = (id: string) => {
-    return () => dispatch({ type: ActionType.DELETE_ITEM, payload: id });
+    return () => dispatch({ type: ItemsActionType.DELETE_ITEM, payload: id });
   };
 
   return (

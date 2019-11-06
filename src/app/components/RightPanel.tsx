@@ -4,7 +4,8 @@ import copy from 'copy-to-clipboard';
 import { Button, ButtonGroup } from 'yuai-buttons';
 import { faCopy, faPrint } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ItemsContext, ActionType } from '@src/app/contexts/ItemsContext';
+import { ItemsContext, ItemsActionType } from '@src/app/contexts/ItemsContext';
+import { AppContext, AppActionType } from '@src/app/contexts/AppContext';
 import { operate, OperatePayload } from '@src/app/services/itemsService';
 
 const Container = styled.div`
@@ -82,8 +83,9 @@ const Copied = styled.span`
 `;
 
 export default function RightPanel() {
-  const { state, dispatch } = React.useContext(ItemsContext);
-  const selectedItem = state.selectedId && state.items[state.selectedId];
+  const App = React.useContext(AppContext);
+  const Items = React.useContext(ItemsContext);
+  const selectedItem = Items.state.selectedId && Items.state.items[Items.state.selectedId];
   const rawSpace = selectedItem && selectedItem.outputSpace;
   const space = rawSpace == null ? '' : rawSpace;
   const stable = selectedItem && selectedItem.outputStable ? selectedItem.outputStable : false;
@@ -101,20 +103,25 @@ export default function RightPanel() {
   }
 
   const runOperation = async (payload: OperatePayload) => {
+    App.dispatch({ type: AppActionType.EDITOR_LOADING, payload: true });
+
     const res = await operate(payload);
 
+    App.dispatch({ type: AppActionType.EDITOR_LOADING, payload: false });
+
+
     if (res.ok) {
-      dispatch({ type: ActionType.PATCH_ITEM, payload: res.data });
+      Items.dispatch({ type: ItemsActionType.PATCH_ITEM, payload: res.data });
     } else {
-      dispatch({ type: ActionType.PATCH_ITEM, payload: { errorMessage: res.data.message, output: null } })
+      Items.dispatch({ type: ItemsActionType.PATCH_ITEM, payload: { errorMessage: res.data.message, output: null } })
     }
   };
 
   const onChangeSpaceOption = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
 
-    dispatch({
-      type: ActionType.PATCH_ITEM,
+    Items.dispatch({
+      type: ItemsActionType.PATCH_ITEM,
       payload: {
         outputSpace: value === '' ? null : parseInt(value)
       }
@@ -130,8 +137,8 @@ export default function RightPanel() {
   const onChangeStableOption = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = e.target;
 
-    dispatch({
-      type: ActionType.PATCH_ITEM,
+    Items.dispatch({
+      type: ItemsActionType.PATCH_ITEM,
       payload: {
         outputStable: checked
       }
