@@ -100,6 +100,16 @@ export default function RightPanel() {
     };
   }
 
+  const runOperation = async (payload: OperatePayload) => {
+    const res = await operate(payload);
+
+    if (res.ok) {
+      dispatch({ type: ActionType.PATCH_ITEM, payload: res.data });
+    } else {
+      dispatch({ type: ActionType.PATCH_ITEM, payload: { errorMessage: res.data.message, output: null } })
+    }
+  };
+
   const onChangeSpaceOption = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
 
@@ -113,17 +123,11 @@ export default function RightPanel() {
     if (payload && (value !== '' || (value === `${parseInt(value)}` && parseInt(value) < 10))) {
       payload.outputSpace = parseInt(value);
 
-      const res = await operate(payload);
-
-      if (res.ok) {
-        dispatch({ type: ActionType.PATCH_ITEM, payload: res.data });
-      } else {
-        dispatch({ type: ActionType.PATCH_ITEM, payload: { errorMessage: res.data.message, output: null } })
-      }
+      runOperation(payload);
     }
   };
 
-  const onChangeStableOption = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeStableOption = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = e.target;
 
     dispatch({
@@ -132,6 +136,12 @@ export default function RightPanel() {
         outputStable: checked
       }
     });
+
+    if (payload) {
+      payload.outputStable = checked;
+
+      runOperation(payload);
+    }
   };
 
   const copyToClipboard = () => {
