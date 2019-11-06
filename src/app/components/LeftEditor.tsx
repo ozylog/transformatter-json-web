@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import Editor from '@src/app/components/Editor';
-import { ItemsContext, ActionType, Format } from '@src/app/contexts/ItemsContext';
+import { ItemsContext, ItemsActionType, Format } from '@src/app/contexts/ItemsContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamation } from '@fortawesome/free-solid-svg-icons';
 
@@ -25,7 +25,7 @@ export default function LeftEditor() {
   const selectedItem = state.selectedId && state.items[state.selectedId];
   const onChange = (value: string) => {
     dispatch({
-      type: ActionType.PATCH_ITEM,
+      type: ItemsActionType.PATCH_ITEM,
       payload: {
         input: value,
         inputFormat: Format.JSON,

@@ -1,6 +1,6 @@
 {
   "name": "transformatter-json-web",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "JSON Transformatter Web",
   "repository": "git@bitbucket.org:asyncawait-io/transformatter-json-web.git",
   "author": "Cahya Pribadi",
@@ -25,6 +25,7 @@
     "copy-to-clipboard": "^3.2.0",
     "dayjs": "^1.8.15",
     "immer": "^4.0.0",
+    "lodash.pick": "^4.4.0",
     "react": "^16.9.0",
     "react-ace": "^7.0.2",
     "react-dom": "^16.9.0",
