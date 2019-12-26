@@ -12,12 +12,12 @@ const Container = styled.div`
 `;
 const ErrorContainer = styled.div`
   position: absolute;
-  bottom: 15px;
-  left: 55px;
-  width: calc(100% - 70px);
-  padding: 10px;
-  border-radius: 3px;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 15px;
   background: ${({ theme }) => theme.errorBackground};
+  z-index: 4;
 `;
 
 export default function LeftEditor() {

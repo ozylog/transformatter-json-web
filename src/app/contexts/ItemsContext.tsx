@@ -1,7 +1,6 @@
 import * as React from 'react';
 import ObjectId from 'bson-objectid';
 import immer from 'immer';
-import dayjs from 'dayjs';
 
 type Action =
   { type: ItemsActionType.CREATE_ITEM } |
@@ -18,6 +17,8 @@ function init() {
   };
 }
 
+let sequence =  1;
+
 const reducer = (state: State, action: Action) => {
   switch (action.type) {
     case ItemsActionType.CREATE_ITEM:
@@ -28,7 +29,7 @@ const reducer = (state: State, action: Action) => {
         draft.selectedId = id;
         draft.items[draft.selectedId] = {
           id,
-          name: `${dayjs(date).format('DDMMM HH:mm:ss')}:${id.substr(id.length - 3)}`,
+          name: `Untitled ${sequence}`,
           input: null,
           inputFormat: null,
           operator: null,
@@ -40,6 +41,8 @@ const reducer = (state: State, action: Action) => {
           createdAt: date,
           updatedAt: date
         };
+
+        sequence++;
       });
     case ItemsActionType.DELETE_ITEM:
       return immer(state, (draft) => {

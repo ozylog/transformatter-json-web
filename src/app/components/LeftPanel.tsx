@@ -33,14 +33,15 @@ export default function LeftPanel() {
   const Items = React.useContext(ItemsContext);
   const App = React.useContext(AppContext);
   const selectedItem = Items.state.selectedId && Items.state.items[Items.state.selectedId];
-  const beautify = async () => {
+
+  const run = async (operator: Operator, outputFormat: Format) => {
     if (!selectedItem || !selectedItem.input || !selectedItem.inputFormat) return;
 
     const payload = {
       outputSpace: selectedItem.outputSpace || 2,
       outputStable: selectedItem.outputStable || false,
-      outputFormat: Format.JSON,
-      operator: Operator.BEAUTIFY_JSON,
+      outputFormat,
+      operator: operator,
       input:  selectedItem.input,
       inputFormat: selectedItem.inputFormat
     };
@@ -58,9 +59,13 @@ export default function LeftPanel() {
     }
   };
 
+  const beautify = () => run(Operator.BEAUTIFY_JSON, Format.JSON);
+  const convertToXML = () => run(Operator.CONVERT_JSON_TO_XML, Format.XML);
+
   return (
     <Container disabled={selectedItem && selectedItem.input ? false : true}>
       <StyledButton onClick={beautify}><FontAwesomeIcon icon={faPlay} /> Beautify</StyledButton>
+      <StyledButton onClick={convertToXML}><FontAwesomeIcon icon={faPlay} /> Convert to XML</StyledButton>
     </Container>
   );
 }

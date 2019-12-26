@@ -16,12 +16,12 @@ const PanelContainer = styled.div`
 `;
 const EditorContainer = styled.div`
   position: relative;
-  height: 100%;
+  height: calc(100% - 60px);
 `;
 const Editors = styled.div`
   display: flex;
   flex-direction: row;
-  height: calc(100% - 60px);
+  height: 100%;
 
   ${({ loading }: { loading: boolean }) => loading && `
     filter: blur(8px);

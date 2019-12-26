@@ -13,6 +13,20 @@ const Layout = styled.div`
   max-width: ${({ theme }) => theme.maxWidth};
   min-width: 1200px;
   margin: auto;
+
+  a {
+    color: ${({ theme }) => theme.primaryColor};
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  input {
+    font-family: 'Roboto Mono';
+    font-size: 14px;
+  }
 `;
 
 export default function App() {
